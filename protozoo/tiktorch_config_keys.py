@@ -57,3 +57,4 @@ class ModelZooEntry:
     loss_config: LossConfig = field(default_factory=LossConfig)
     trainer_callbacks: Callbacks = field(default_factory=Callbacks)
     evaluator_callbacks: Callbacks = field(default_factory=Callbacks)
+    predictor_callbacks: Callbacks = field(default_factory=Callbacks)

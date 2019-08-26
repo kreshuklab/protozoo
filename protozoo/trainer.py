@@ -5,6 +5,7 @@ from protozoo.tiktorch_config_keys import ModelZooEntry
 
 def get_trainer(model_zoo_entry: ModelZooEntry) -> Engine:
     def training_step(trainer: Engine, batch) -> float:
+        print("STEP")
         ipt, tgt = batch
         trainer.state.optimizer.zero_grad()
         pred = trainer.state.model(ipt)

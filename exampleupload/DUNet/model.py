@@ -77,6 +77,7 @@ class Output(Conv2D):
 
 
 class DUNetSkeleton(nn.Module):
+    # model taken from https://github.com/inferno-pytorch/neurofire/tree/master/neurofire/models
     def __init__(self, encoders, decoders, base, output, final_activation=None, return_hypercolumns=False):
         super(DUNetSkeleton, self).__init__()
         assert isinstance(encoders, list)
@@ -166,6 +167,7 @@ class DUNetSkeleton(nn.Module):
 
 
 class DUNet2D(DUNetSkeleton):
+    # model taken from https://github.com/inferno-pytorch/neurofire/tree/master/neurofire/models
     def __init__(self, in_channels, out_channels, N=16, return_hypercolumns=False):
         # Build encoders
         encoders = [

@@ -1,15 +1,16 @@
 from torch.utils.data import DataLoader
 
 from protozoo.datasets import Fluo_N2DH_SIM
-from protozoo.trainer import get_trainer
+
 
 from exampleupload.modelzoo import get_entry
+from protozoo.predictor import get_predictor
 
 if __name__ == "__main__":
     model_zoo_entry = get_entry()
 
-    trainer = get_trainer(model_zoo_entry)
-    dl = DataLoader(Fluo_N2DH_SIM())
+    predictor = get_predictor(model_zoo_entry)
+    dl = DataLoader(Fluo_N2DH_SIM(load_target=False))
 
-    trainer.run(dl)
+    predictor.run(dl)
     print("done")
