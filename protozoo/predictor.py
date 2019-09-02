@@ -1,23 +1,34 @@
 import torch
+
 from ignite.engine import Events, Engine
+from typing import Optional
 
 from protozoo.tiktorch_config_keys import ModelZooEntry
 
 
-def get_predictor(model_zoo_entry: ModelZooEntry) -> Engine:
-    def predict_batch(predictor: Engine, batch) -> torch.Tensor:
-        print('predict')
-        return predictor.state.model(batch)
+class Predictor(Engine):
+    def __init__(self, model_zoo_entry: ModelZooEntry, model: Optional[torch.nn.Module] = None):
+        if model_zoo_entry.model_config.pretrained_source is not None:
+            raise NotImplementedError("model_zoo_entry.model_config.pretrained_source")
 
+        model_config = model_zoo_entry.model_config
 
-    predictor = Engine(predict_batch)
+        def predict_batch(predictor: Engine, batch) -> torch.Tensor:
+            print("predict")
+            return predictor.state.model(batch)
 
-    @predictor.on(Events.STARTED)
-    def training_setup(predictor: Engine):
-        predictor.state.model = model_zoo_entry.model_config.model_class(**model_zoo_entry.model_config.model_kwargs)
-        assert model_zoo_entry.model_config.pretrained_source is None
+        super().__init__(predict_batch)
 
-    for callback in model_zoo_entry.predictor_callbacks:
-        predictor.add_event_handler(callback.event, callback.function)
+        self.given_model = model
+        if model is not None and not isinstance(model, model_config.model_class):
+            raise ValueError(
+                f"model {model} is not of type {model_config.model_class} as specified in model_config.model_class"
+            )
 
-    return predictor
+        @self.on(Events.STARTED)
+        def setup(predictor: Predictor):
+            predictor.state.model = predictor.given_model or model_config.model_class(**model_config.model_kwargs)
+            predictor.state.model.eval()
+
+        for callback in model_zoo_entry.predictor_callbacks:
+            self.add_event_handler(callback.event, callback.function)
