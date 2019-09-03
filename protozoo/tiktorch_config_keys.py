@@ -2,7 +2,7 @@ import torch.nn
 import warnings
 
 from dataclasses import dataclass, field
-from typing import Type, Any, Optional, Callable
+from typing import Type, Any, Optional, Callable, List
 from ignite.engine import Events, Engine
 
 
@@ -37,17 +37,10 @@ class LossConfig:
         self.loss_kwargs = loss_kwargs
 
 
+@dataclass
 class Callback:
     event: Events
     function: Callable[[Engine], None]
-
-
-class Callbacks:
-    def __init__(self, *callbacks: Callback):
-        self.callbacks = callbacks
-
-    def __iter__(self):
-        return iter(self.callbacks)
 
 
 @dataclass
@@ -55,6 +48,6 @@ class ModelZooEntry:
     model_config: ModelConfig
     optimizer_config: OptimizerConfig = field(default_factory=OptimizerConfig)
     loss_config: LossConfig = field(default_factory=LossConfig)
-    trainer_callbacks: Callbacks = field(default_factory=Callbacks)
-    evaluator_callbacks: Callbacks = field(default_factory=Callbacks)
-    predictor_callbacks: Callbacks = field(default_factory=Callbacks)
+    trainer_callbacks: List[Callback] = field(default_factory=list)
+    evaluator_callbacks: List[Callback] = field(default_factory=list)
+    predictor_callbacks: List[Callback] = field(default_factory=list)
