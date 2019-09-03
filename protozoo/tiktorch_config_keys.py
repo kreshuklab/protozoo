@@ -2,7 +2,7 @@ import torch.nn
 import warnings
 
 from dataclasses import dataclass, field
-from typing import Type, Any, Optional, Callable
+from typing import Type, Any, Optional, Callable, Mapping
 from ignite.engine import Events, Engine
 
 
@@ -10,33 +10,40 @@ default_optimizer_class = torch.optim.Adam
 default_loss_class = torch.nn.MSELoss
 
 
+@dataclass
 class ModelConfig:
-    def __init__(self, model_class: Type, pretrained_source: Optional[str] = None, **model_kwargs: Any):
-        self.model_class = model_class
-        self.pretrained_source = pretrained_source
-        self.model_kwargs = model_kwargs
+    model_class: Type
+    pretrained_source: Optional[Any] = None
+    model_kwargs: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        if self.pretrained_source is not None:
+            raise NotImplementedError("pretrained model source")
 
 
+@dataclass
 class OptimizerConfig:
-    def __init__(self, optimizer_class: Optional[Type] = None, **optimizer_kwargs: Any):
-        if optimizer_class is None:
+    optimizer_class: Optional[Type] = None
+    optimizer_kwargs: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        if self.optimizer_class is None:
             warnings.warn(f"Using default optimizer: {default_optimizer_class}")
-            optimizer_class = default_optimizer_class
-
-        self.optimizer_class = optimizer_class
-        self.optimizer_kwargs = optimizer_kwargs
+            self.optimizer_class = default_optimizer_class
 
 
+@dataclass
 class LossConfig:
-    def __init__(self, loss_class: Optional[Type] = None, **loss_kwargs: Any):
-        if loss_class is None:
-            warnings.warn(f"Using default loss: {default_loss_class}")
-            loss_class = default_loss_class
+    loss_class: Optional[Type] = None
+    loss_kwargs: Mapping[str, Any] = field(default_factory=dict)
 
-        self.loss_class = loss_class
-        self.loss_kwargs = loss_kwargs
+    def __post_init__(self):
+        if self.loss_class is None:
+            warnings.warn(f"Using default loss class: {default_loss_class}")
+            self.loss_class = default_loss_class
 
 
+@dataclass
 class Callback:
     event: Events
     function: Callable[[Engine], None]
