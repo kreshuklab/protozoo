@@ -1,5 +1,4 @@
 import torch.nn
-import warnings
 
 from dataclasses import dataclass, field
 from typing import Type, Any, Optional, Callable, Mapping
@@ -23,24 +22,14 @@ class ModelConfig:
 
 @dataclass
 class OptimizerConfig:
-    optimizer_class: Optional[Type] = None
+    optimizer_class: Type = default_optimizer_class
     optimizer_kwargs: Mapping[str, Any] = field(default_factory=dict)
-
-    def __post_init__(self):
-        if self.optimizer_class is None:
-            warnings.warn(f"Using default optimizer: {default_optimizer_class}")
-            self.optimizer_class = default_optimizer_class
 
 
 @dataclass
 class LossConfig:
-    loss_class: Optional[Type] = None
+    loss_class: Type = default_loss_class
     loss_kwargs: Mapping[str, Any] = field(default_factory=dict)
-
-    def __post_init__(self):
-        if self.loss_class is None:
-            warnings.warn(f"Using default loss class: {default_loss_class}")
-            self.loss_class = default_loss_class
 
 
 @dataclass
