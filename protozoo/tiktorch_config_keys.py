@@ -1,8 +1,7 @@
 import torch.nn
-import warnings
 
 from dataclasses import dataclass, field
-from typing import Type, Any, Optional, Callable
+from typing import Type, Any, Optional, Callable, Mapping, Tuple
 from ignite.engine import Events, Engine
 
 
@@ -10,33 +9,78 @@ default_optimizer_class = torch.optim.Adam
 default_loss_class = torch.nn.MSELoss
 
 
+class MiniBatch:
+    """
+    Base class for different mini batch formats. Mainly used for type checking
+    """
+
+    pass
+
+
+@dataclass
+class TorchMiniBatchOfInputTensor(MiniBatch):
+    """
+    A minimalistic mini batch format consisting of a single torch.Tensor input
+    note: only suitable for prediction, not training or evaluation
+    """
+
+    input_tensor: torch.Tensor
+
+
+@dataclass
+class TorchMiniBatchOfInputTensorTargetTensor(TorchMiniBatchOfInputTensor):
+    """
+    The standard mini batch format with torch.Tensor(s): input, target
+    """
+
+    target_tensor: torch.Tensor
+
+
+def default_create_model_input(mini_batch: TorchMiniBatchOfInputTensor) -> Tuple[torch.Tensor]:
+    """
+    Extract the input torch.Tensor from a mini_batch of type `TorchMiniBatchOfInputTensor` (or inherited thereof)
+    """
+
+    return (mini_batch.input_tensor,)
+
+
+def default_create_loss_input(
+    model_output: torch.Tensor, mini_batch: TorchMiniBatchOfInputTensorTargetTensor
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Combines the model output with the mini batch target.
+    """
+
+    return model_output, mini_batch.target_tensor
+
+
+@dataclass
 class ModelConfig:
-    def __init__(self, model_class: Type, pretrained_source: Optional[str] = None, **model_kwargs: Any):
-        self.model_class = model_class
-        self.pretrained_source = pretrained_source
-        self.model_kwargs = model_kwargs
+    model_class: Type
+    pretrained_source: Optional[Any] = None
+    model_kwargs: Mapping[str, Any] = field(default_factory=dict)
+
+    create_model_input: Callable[[MiniBatch], Tuple[Any, ...]] = default_create_model_input
+    create_loss_input: Callable[[Any, MiniBatch], Tuple[Any, ...]] = default_create_loss_input
+
+    def __post_init__(self):
+        if self.pretrained_source is not None:
+            raise NotImplementedError("pretrained model source")
 
 
+@dataclass
 class OptimizerConfig:
-    def __init__(self, optimizer_class: Optional[Type] = None, **optimizer_kwargs: Any):
-        if optimizer_class is None:
-            warnings.warn(f"Using default optimizer: {default_optimizer_class}")
-            optimizer_class = default_optimizer_class
-
-        self.optimizer_class = optimizer_class
-        self.optimizer_kwargs = optimizer_kwargs
+    optimizer_class: Type = default_optimizer_class
+    optimizer_kwargs: Mapping[str, Any] = field(default_factory=dict)
 
 
+@dataclass
 class LossConfig:
-    def __init__(self, loss_class: Optional[Type] = None, **loss_kwargs: Any):
-        if loss_class is None:
-            warnings.warn(f"Using default loss: {default_loss_class}")
-            loss_class = default_loss_class
-
-        self.loss_class = loss_class
-        self.loss_kwargs = loss_kwargs
+    loss_class: Type = default_loss_class
+    loss_kwargs: Mapping[str, Any] = field(default_factory=dict)
 
 
+@dataclass
 class Callback:
     event: Events
     function: Callable[[Engine], None]
