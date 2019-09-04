@@ -86,10 +86,11 @@ class LogConfig:
     dir: Path = Path.home() / "protozoo"
     model_save_interval: int = 2
     model_n_saved: int = 2
+    checkpointer: ModelCheckpoint = field(init=False)
 
     def __post_init__(self):
         self.checkpointer: ModelCheckpoint = ModelCheckpoint(
-            self.dir.as_posix(),
+            (self.dir / "checkpoints").as_posix(),
             "protozoo",
             save_interval=self.model_save_interval,
             n_saved=self.model_n_saved,
@@ -97,6 +98,7 @@ class LogConfig:
         )
 
 
+@dataclass
 class Callback:
     event: Events
     function: Callable[[Engine], None]
