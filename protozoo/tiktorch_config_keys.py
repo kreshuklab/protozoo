@@ -81,15 +81,19 @@ class LossConfig:
     loss_kwargs: Mapping[str, Any] = field(default_factory=dict)
 
 
+@dataclass
 class LogConfig:
-    def __init__(self, dir: Optional[Path] = None, save_interval: int = 2, n_saved: int = 2):
-        if dir is None:
-            dir = Path(Path.home() / "protozoo")
-            warnings.warn(f"Logging to default directory: {dir}")
+    dir: Path = Path.home() / "protozoo"
+    model_save_interval: int = 2
+    model_n_saved: int = 2
 
-        self.dir = dir
+    def __post_init__(self):
         self.checkpointer: ModelCheckpoint = ModelCheckpoint(
-            self.dir.as_posix(), "protozoo", save_interval=save_interval, n_saved=n_saved, create_dir=True
+            self.dir.as_posix(),
+            "protozoo",
+            save_interval=self.model_save_interval,
+            n_saved=self.model_n_saved,
+            create_dir=True,
         )
 
 
@@ -106,3 +110,4 @@ class ModelZooEntry:
     trainer_callbacks: List[Callback] = field(default_factory=list)
     evaluator_callbacks: List[Callback] = field(default_factory=list)
     predictor_callbacks: List[Callback] = field(default_factory=list)
+    log_config: LogConfig = field(default_factory=LogConfig)
