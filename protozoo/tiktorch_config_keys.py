@@ -3,7 +3,8 @@ import torch.nn
 from dataclasses import dataclass, field
 from typing import Type, Any, Optional, Callable, Mapping, Tuple, List
 from ignite.engine import Events, Engine
-
+from ignite.handlers import ModelCheckpoint
+from pathlib import Path
 
 default_optimizer_class = torch.optim.Adam
 default_loss_class = torch.nn.MSELoss
@@ -80,7 +81,18 @@ class LossConfig:
     loss_kwargs: Mapping[str, Any] = field(default_factory=dict)
 
 
-@dataclass
+class LogConfig:
+    def __init__(self, dir: Optional[Path] = None, save_interval: int = 2, n_saved: int = 2):
+        if dir is None:
+            dir = Path(Path.home() / "protozoo")
+            warnings.warn(f"Logging to default directory: {dir}")
+
+        self.dir = dir
+        self.checkpointer: ModelCheckpoint = ModelCheckpoint(
+            self.dir.as_posix(), "protozoo", save_interval=save_interval, n_saved=n_saved, create_dir=True
+        )
+
+
 class Callback:
     event: Events
     function: Callable[[Engine], None]
