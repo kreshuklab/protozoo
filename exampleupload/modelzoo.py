@@ -1,4 +1,4 @@
-from protozoo.tiktorch_config_keys import ModelZooEntry, ModelConfig
+from protozoo.config import ModelZooEntry, ModelConfig
 
 from DUNet import DUNet2D
 

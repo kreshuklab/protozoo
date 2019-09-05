@@ -3,7 +3,7 @@ import torch
 from ignite.engine import Events, Engine
 from typing import Optional
 
-from protozoo.tiktorch_config_keys import ModelZooEntry
+from protozoo.config import ModelZooEntry
 
 
 class Predictor(Engine):

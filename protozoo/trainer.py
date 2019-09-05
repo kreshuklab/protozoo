@@ -1,6 +1,6 @@
 from ignite.engine import Events, Engine
 
-from protozoo.tiktorch_config_keys import ModelZooEntry
+from protozoo.config import ModelZooEntry
 
 
 class Trainer(Engine):
