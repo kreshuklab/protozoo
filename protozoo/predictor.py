@@ -4,10 +4,12 @@ from ignite.engine import Events, Engine
 from typing import Optional
 
 from protozoo.config import ModelZooEntry
+from protozoo.shared_config import MapTo
 
 
 class Predictor(Engine):
     def __init__(self, model_zoo_entry: ModelZooEntry, model: Optional[torch.nn.Module] = None):
+        model_zoo_entry = model_zoo_entry.get_mapped(MapTo.PYTORCH)
         if model_zoo_entry.model_config.pretrained_source is not None:
             raise NotImplementedError("model_zoo_entry.model_config.pretrained_source")
 
