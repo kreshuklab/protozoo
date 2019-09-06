@@ -38,7 +38,11 @@ Config = TypeVar("Config", bound="BaseConfig")
 @dataclass
 class BaseConfig:
     custom_module: Optional[Union[str, ModuleType]] = field(
-        default=None, metadata={Representation(b): lambda name: import_module(name) if name else None for b in Backend}
+        default=None,
+        metadata={
+            HIDE: True,
+            **{Representation(b): lambda name: import_module(name) if name else None for b in Backend},
+        },
     )
     repr: InitVar[Representation] = field(default=Representation.STRING, metadata={HIDE: True})
     impl: InitVar[Sequence[ModuleType]] = tuple()
