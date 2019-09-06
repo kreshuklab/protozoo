@@ -1,21 +1,27 @@
+import os
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
 
-from protozoo.shared_config import MapTo, BaseConfig, HIDE
+from protozoo.config_base import BaseConfig, HIDE, Backend, Representation
 
-framework = "pytorch"
+BACKEND = Backend(os.environ.get("BACKEND", "pytorch"))
 
-if framework == "pytorch":
-    from protozoo.pytorch_config import ModelConfig, OptimizerConfig, LossConfig, Callback, LogConfig
-
-    map_to = MapTo.PYTORCH
+if BACKEND == Backend.PYTORCH:
+    from protozoo.config_pytorch import ModelConfig, OptimizerConfig, LossConfig, Callback, LogConfig
 else:
-    raise NotImplementedError(framework)
+    raise NotImplementedError(BACKEND)
 
 
 @dataclass
 class ModelZooEntry(BaseConfig):
+    """
+    A model zoo entry is a collection of (nested) Configurations that are derived from BaseConfig.
+    Each backend adapts the shared configs, which allow for a common string representation.
+    """
+    origin: str = Path(__file__).as_uri()
+    repr=Representation(BACKEND)
     model_config: ModelConfig = field(default_factory=ModelConfig)
     optimizer_config: OptimizerConfig = field(default_factory=OptimizerConfig)
     loss_config: LossConfig = field(default_factory=LossConfig)
@@ -26,18 +32,18 @@ class ModelZooEntry(BaseConfig):
 
 
 if __name__ == "__main__":
-    entry = ModelZooEntry()
+    entry = ModelZooEntry(repr=Representation.STRING)
 
     print("\nfirst entry")
     print(entry)
     print("\nas dict")
     print(entry.as_dict())
     print()
-    entry = entry.get_mapped(map_to=MapTo.PYTORCH)
+    entry = entry.get_mapped(Representation.PYTORCH)
     print("\nafter mapping")
     print(entry)
     print("\nas dict")
     print(entry.as_dict())
 
-    entry.export(Path.home() / "protozoo" / "string.yaml", map_to=MapTo.STRING)
-    entry.export(Path.home() / "protozoo" / "pytorch.yaml", map_to=MapTo.PYTORCH, export_hidden=True, safe_dump=False)
+    entry.save(Path.home() / "protozoo" / "string.yaml", repr=Representation.STRING)
+    entry.save(Path.home() / "protozoo" / "pytorch.yaml", repr=Representation.PYTORCH, save_hidden=True, safe_dump=False)

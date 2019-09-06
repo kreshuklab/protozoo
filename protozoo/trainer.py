@@ -1,12 +1,12 @@
 from ignite.engine import Events, Engine
 
-from protozoo.config import ModelZooEntry
-from protozoo.shared_config import MapTo
+from protozoo.config_base import Representation
+from protozoo.entry import ModelZooEntry
 
 
 class Trainer(Engine):
     def __init__(self, model_zoo_entry: ModelZooEntry):
-        model_zoo_entry = model_zoo_entry.get_mapped(MapTo.PYTORCH)
+        model_zoo_entry = model_zoo_entry.get_mapped(Representation.PYTORCH)
         self.model_config = model_zoo_entry.model_config
         self.optimizer_config = model_zoo_entry.optimizer_config
         self.loss_config = model_zoo_entry.loss_config
