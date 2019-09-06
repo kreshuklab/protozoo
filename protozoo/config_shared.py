@@ -39,7 +39,7 @@ class NumpyMiniBatchOfInputTarget(NumpyMiniBatchOfInput):
 
 @dataclass
 class SharedModelConfig(BaseConfig):
-    model_class: Union[str, Type] = DEFAULT
+    model_class: Union[str, Type] = "NOT SPECIFIED"
     pretrained_source: Optional[Any] = field(default=None, metadata={HIDE: True})
     model_kwargs: Mapping[str, Any] = field(default_factory=dict)
 
